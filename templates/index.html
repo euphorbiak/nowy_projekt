@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Correlation Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        
+        .input-section {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        select, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #764ba2;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #653a8a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(118, 75, 162, 0.4);
+        }
+        
+        .results-section {
+            margin-top: 40px;
+        }
+        
+        .results-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        
+        .result-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #764ba2;
+        }
+        
+        .result-box h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .result-box pre {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c33;
+        }
+        
+        .success {
+            background: #efe;
+            color: #3c3;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3c3;
+        }
+        
+        .message {
+            display: none;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📈 Stock Correlation Calculator</h1>
+        <p class="subtitle">Analyze how stocks move together</p>
+        
+        <div class="input-section">
+            <form id="calculatorForm">
+                <div class="form-group">
+                    <label for="symbols">Stock Symbols (comma-separated)</label>
+                    <textarea id="symbols" placeholder="Example: AAPL, MSFT, GOOGL, AMZN, TSLA">AAPL, MSFT, GOOGL, AMZN, TSLA</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="period">Time Period</label>
+                    <select id="period">
+                        <option value="1y">Last 1 Year</option>
+                        <option value="2y" selected>Last 2 Years</option>
+                        <option value="5y">Last 5 Years</option>
+                        <option value="10y">Last 10 Years</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="method">Correlation Method</label>
+                    <select id="method">
+                        <option value="pearson" selected>Pearson</option>
+                        <option value="spearman">Spearman</option>
+                        <option value="kendall">Kendall</option>
+                    </select>
+                </div>
+                
+                <div class="button-group">
+                    <button type="button" class="btn-primary" onclick="downloadStocks()">1. Download Data</button>
+                    <button type="button" class="btn-secondary" onclick="calculateCorrelations()">2. Calculate Correlations</button>
+                </div>
+            </form>
+        </div>
+        
+        <div id="message" class="message"></div>
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Processing... This may take a minute.</p>
+        </div>
+        
+        <div id="results" class="results-section"></div>
+    </div>
+    
+    <script>
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'message ' + type;
+            msg.style.display = 'block';
+        }
+        
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+        
+        function getSymbols() {
+            return document.getElementById('symbols')
+                .value
+                .split(',')
+                .map(s => s.trim().toUpperCase())
+                .filter(s => s.length > 0);
+        }
+        
+        async function downloadStocks() {
+            try {
+                const symbols = getSymbols();
+                if (symbols.length === 0) {
+                    showMessage('Please enter at least one stock symbol', 'error');
+                    return;
+                }
+                
+                showLoading(true);
+                
+                const response = await fetch('/api/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        symbols: symbols,
+                        period: document.getElementById('period').value
+                    })
+                });
+                
+                const data = await response.json();
+                showLoading(false);
+                
+                if (data.status === 'success') {
+                    showMessage('✓ ' + data.message, 'success');
+                } else {
+                    showMessage('✗ ' + data.message, 'error');
+                }
+            } catch (error) {
+                showLoading(false);
+                showMessage('Error: ' + error.message, 'error');
+            }
+        }
+        
+        async function calculateCorrelations() {
+            try {
+                showLoading(true);
+                
+                const response = await fetch('/api/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        method: document.getElementById('method').value
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    showMessage('✓ Correlations calculated', 'success');
+                    await getResults();
+                } else {
+                    showMessage('✗ ' + data.message, 'error');
+                }
+                
+                showLoading(false);
+            } catch (error) {
+                showLoading(false);
+                showMessage('Error: ' + error.message, 'error');
+            }
+        }
+        
+        async function getResults() {
+            try {
+                // Get statistics
+                const statsResp = await fetch('/api/stats');
+                const statsData = await statsResp.json();
+                
+                // Get top correlations
+                const topResp = await fetch('/api/top-correlations?n=10');
+                const topData = await topResp.json();
+                
+                // Get lowest correlations
+                const lowestResp = await fetch('/api/lowest-correlations?n=10');
+                const lowestData = lowestResp.json();
+                
+                let html = '';
+                
+                if (statsData.status === 'success') {
+                    const stats = statsData.data;
+                    html += `
+                        <div class="result-box">
+                            <h3>📊 Statistics</h3>
+                            <pre>${JSON.stringify(stats, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+                
+                if (topData.status === 'success') {
+                    html += `
+                        <div class="result-box">
+                            <h3>🔥 Most Correlated Pairs (Top 10)</h3>
+                            <pre>${JSON.stringify(topData.data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+                
+                if (lowestData.status === 'success') {
+                    html += `
+                        <div class="result-box">
+                            <h3>✨ Best for Diversification (Lowest Correlations)</h3>
+                            <pre>${JSON.stringify(await lowestData, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+                
+                document.getElementById('results').innerHTML = html;
+            } catch (error) {
+                showMessage('Error fetching results: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
