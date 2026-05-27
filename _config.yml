@@ -1,0 +1,7 @@
+```yaml
+theme: jekyll-theme-minimal
+title: Stock Correlation Calculator
+description: Calculate pairwise correlations for 1000 US listed stocks
+author: Your Name
+github:
+  repository_url: https://github.com/euphorbiak/nowy_projekt
