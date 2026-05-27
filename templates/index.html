@@ -355,7 +355,7 @@
                 
                 // Get lowest correlations
                 const lowestResp = await fetch('/api/lowest-correlations?n=10');
-                const lowestData = lowestResp.json();
+                const lowestData = await lowestResp.json();
                 
                 let html = '';
                 
@@ -382,7 +382,7 @@
                     html += `
                         <div class="result-box">
                             <h3>✨ Best for Diversification (Lowest Correlations)</h3>
-                            <pre>${JSON.stringify(await lowestData, null, 2)}</pre>
+                            <pre>${JSON.stringify(lowestData.data, null, 2)}</pre>
                         </div>
                     `;
                 }
